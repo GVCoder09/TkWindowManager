@@ -11,8 +11,8 @@ class WindowFlags(IntFlag):
     'WN_RESIZABLE' means 'Window Not Resizable', and so on.
 
     """
-    WN_CONTROLS =  1
-    WN_DRAGABLE =  2
+    WN_CONTROLS = 1
+    WN_DRAGABLE = 2
     WN_RESIZABLE = 4
 
 
@@ -23,6 +23,7 @@ class Window:
     The window includes a title bar with minimize, maximize and close buttons,
     resizable corners, and a content area that can contain child windows.
     """
+
     def __init__(self, parent, title, content, size, flags):
         """Initialize a new window.
 
@@ -54,7 +55,6 @@ class Window:
         if self.content:
             self.set_content(self.content)
 
-
     def create_window(self):
         """ Create the window's visual elements and set up event bindings """
 
@@ -67,7 +67,7 @@ class Window:
             relief="flat",
             padx=2,
             pady=2,
-            background="#154090",
+            background="#878A8D",
             highlightthickness=1,
             highlightcolor="#000000",
             highlightbackground="#000000"
@@ -80,9 +80,8 @@ class Window:
                 self.window_frame,
                 width=31,
                 height=31,
-                bg="#184AA5",
+                bg="#878A8D",
                 highlightthickness=1,
-                bd=1,
                 highlightcolor="#000000",
                 highlightbackground="#000000",
                 relief="flat"
@@ -93,7 +92,7 @@ class Window:
                 self.window_frame,
                 width=31,
                 height=31,
-                bg="#184AA5",
+                bg="#878A8D",
                 highlightthickness=1,
                 bd=1,
                 highlightcolor="#000000",
@@ -106,7 +105,7 @@ class Window:
                 self.window_frame,
                 width=31,
                 height=31,
-                bg="#184AA5",
+                bg="#878A8D",
                 highlightthickness=1,
                 bd=1,
                 highlightcolor="#000000",
@@ -119,7 +118,7 @@ class Window:
                 self.window_frame,
                 width=31,
                 height=31,
-                bg="#184AA5",
+                bg="#878A8D",
                 highlightthickness=1,
                 bd=1,
                 highlightcolor="#000000",
@@ -128,32 +127,35 @@ class Window:
             )
             self.corner_D.place(rely=1.0, x=-5, y=5, anchor='sw')
 
-
         # Create the title bar with a close button
         self.title_bar = tk.Frame(
             self.window_frame,
             relief="raised",
             borderwidth=1,
-            background="#FFFFFF",
+            background="#000000",
             highlightthickness=0,
             highlightcolor="#FCFCFC",
             highlightbackground="#FCFCFC"
         )
         self.title_bar.pack(fill="x")
 
-        self.close_icon = ImageTk.PhotoImage(Image.open("./assets/close_button.bmp"))
+        self.close_icon = ImageTk.PhotoImage(
+            Image.open("./assets/close_button.bmp"))
         self.close_button = tk.Button(
             self.title_bar,
-            command=self.close_window,
+            command=self.show_context_menu,
             image=self.close_icon,
             width=20,
             height=20,
             borderwidth=1,
             relief="flat",
             anchor="center",
-            background="#C0C7C8",
+            bg="#C0C7C8",
             activebackground="#C0C7C8",
-            foreground="black"
+            fg="#000000",
+            highlightthickness=1,
+            highlightcolor="#000000",
+            highlightbackground="#000000"
         )
         self.close_button.pack(side="left")
 
@@ -162,14 +164,15 @@ class Window:
             text=self.title,
             font=("Arial", 10, "bold"),
             anchor="center",
-            background="#154095",
+            background="#000076",
             foreground="#FCFCFC"
         )
         self.title_label.pack(side="left", fill="both", expand=True)
 
         # Add maximize and minimize buttons if the window has controls
         if not self.flags & WindowFlags.WN_CONTROLS:
-            self.maximize_icon = ImageTk.PhotoImage(Image.open("./assets/maximize_button.bmp"))
+            self.maximize_icon = ImageTk.PhotoImage(
+                Image.open("./assets/maximize_button.bmp"))
             self.maximize_button = tk.Button(
                 self.title_bar,
                 command=self.maximize_window,
@@ -188,7 +191,8 @@ class Window:
             )
             self.maximize_button.pack(side="right")
 
-            self.shrink_icon = ImageTk.PhotoImage(Image.open("./assets/minimize_button.bmp"))
+            self.shrink_icon = ImageTk.PhotoImage(
+                Image.open("./assets/minimize_button.bmp"))
             self.shrink_button = tk.Button(
                 self.title_bar,
                 command=self.minimize_window,
@@ -225,7 +229,8 @@ class Window:
             bg="white"
         )
         self.circle_canvas.pack(fill="both", expand=True)
-        self.circle = self.circle_canvas.create_oval(50, 50, 150, 150, fill="#008000")
+        self.circle = self.circle_canvas.create_oval(
+            50, 50, 150, 150, fill="#008000")
 
         # Bind drag events if the window is draggable
         if not self.flags & WindowFlags.WN_DRAGABLE:
@@ -255,15 +260,45 @@ class Window:
             self.corner_D.bind("<ButtonRelease-1>", self.stop_resize)
             self.corner_D.bind("<B1-Motion>", self.resize)
 
-        # Track window size and position changes
-        self.window_frame.bind("<Configure>", self.track_window_size_and_position)
-        self.title_label.bind("<Configure>", self.track_window_size_and_position)
+            self.window_frame.bind("<ButtonPress-1>", self.start_resize)
+            self.window_frame.bind("<ButtonRelease-1>", self.stop_resize)
+            self.window_frame.bind("<B1-Motion>", self.resize)
 
+        # Track window size and position changes
+
+        self.window_frame.bind(
+            "<Configure>", self.track_window_size_and_position)
+        self.title_label.bind(
+            "<Configure>", self.track_window_size_and_position)
+        self.window_frame.bind("<FocusIn>", self.on_focus)
+        self.window_frame.bind("<FocusOut>", self.out_focus)
+
+        self.context_menu = tk.Menu(self.window_frame, 
+                                    tearoff=0, 
+                                    bg="#C0C0C0", 
+                                    fg="black",
+                                    activebackground="#808080", 
+                                    activeforeground="white", 
+                                    font=("MS Sans Serif", 8))
+
+        self.context_menu.add_command(label="Close", command=self.close_window)
+        self.context_menu.add_command(
+            label="Minimize", command=self.minimize_window)
+        self.context_menu.add_command(
+            label="Maximize", command=self.maximize_window)
+
+    def show_context_menu(self):
+        """Show the context menu at the mouse position."""
+        # Get the position of the close button
+        x = self.close_button.winfo_rootx()
+        y = self.close_button.winfo_rooty() + self.close_button.winfo_height()
+
+        # Post the context menu at the position of the close button
+        self.context_menu.tk_popup(x, y)
 
     def close_window(self):
         """ Destroy the window and remove it from the display """
         self.window_frame.destroy()
-
 
     def maximize_window(self):
         """
@@ -290,7 +325,8 @@ class Window:
         parent_height = self.parent.winfo_height()
 
         # Maximize the window to fill the parent widget
-        self.window_frame.place(x=-6, y=-6, width=parent_width + 12, height=parent_height + 13)
+        self.window_frame.place(
+            x=-6, y=-6, width=parent_width + 12, height=parent_height + 13)
         self.is_maximized = True
 
         # Update all maximized child windows to fit new size
@@ -298,8 +334,8 @@ class Window:
             if child.is_maximized:
                 content_width = self.window_content.winfo_width()
                 content_height = self.window_content.winfo_height()
-                child.window_frame.place(x=-6, y=-6, width=content_width + 12, height=content_height + 13)
-
+                child.window_frame.place(
+                    x=-6, y=-6, width=content_width + 12, height=content_height + 13)
 
     def minimize_window(self):
         """ Restore the window to its previous size and position if maximized """
@@ -316,7 +352,6 @@ class Window:
                 if child.is_maximized:
                     child.maximize_window()
 
-
     def start_drag(self, event):
         """ Begin window dragging operation """
 
@@ -332,13 +367,11 @@ class Window:
         # Prevent conflict with resize operations
         self.is_dragging = True
 
-
     def stop_drag(self, event: tk.Event):
         """ End window dragging operation """
         self.is_dragging = False
         self.drag_start_x = None
         self.drag_start_y = None
-
 
     def drag(self, event: tk.Event):
         """ Handle window movement during drag operation """
@@ -357,6 +390,23 @@ class Window:
 
         self.window_frame.place(x=new_x, y=new_y)
 
+    def on_focus(self, event: tk.Event):
+        """
+        Handle the focus event for the window.
+
+        Args:
+            event: The focus event.
+        """
+        print("focus_in")
+
+    def out_focus(self, event: tk.Event):
+        """
+        Handle the focus out event for the window.
+
+        Args:
+            event: The focus out event.
+        """
+        print("focus_out")
 
     def start_resize(self, event):
         """ Begin window resizing operation """
@@ -393,6 +443,11 @@ class Window:
             cursor = "bottom_left_corner"
             handle_x = self.window_frame.winfo_width() - 1
             handle_y = 0
+        else:
+            cursor = "bottom_left_corner"
+            handle_x = self.window_frame.winfo_width() - 1
+            handle_y = 0
+
 
         # Store the handle position relative to the window and the root window
         handle_pos_x_root = handle_x + self.window_frame.winfo_rootx()
@@ -415,7 +470,6 @@ class Window:
         self.resize_offset_x = event.x
         self.resize_offset_y = event.y
 
-
     def stop_resize(self, event: tk.Event):
         """
         End window resizing operation
@@ -429,7 +483,6 @@ class Window:
             # If we don't prevent that we will end up with an inconsistent state that will make the window flicker and behave erratically while dragging or resizing
             self.window_frame.config(cursor="")
             self.is_resizing = False
-
 
     def resize(self, event: tk.Event):
         """Handle window resizing during resize operation.
@@ -467,7 +520,8 @@ class Window:
             new_y = self.window_start_y + deltay
 
         # Update window geometry in a single operation
-        self.window_frame.place(x=new_x, y=new_y, width=new_width, height=new_height)
+        self.window_frame.place(
+            x=new_x, y=new_y, width=new_width, height=new_height)
 
         # Update canvas size if needed
         canvas_width = new_width - 20
@@ -496,7 +550,7 @@ class Window:
             # Only track changes in size and position when the window is not maximized or shrinked
             # Otherwise we would overwrite the previous size and position with the maximized or shrinked size and position
             # And then when we un-maximize or un-shrink the window it would be restored to the wrong size and position (the maximized or shrinked size and position instead of the previous size and position)
-            if not hasattr(self,'is_shrinked') or not (self.is_shrinked):
+            if not hasattr(self, 'is_shrinked') or not (self.is_shrinked):
                 # Only track changes in size and position when the window is not shrinked or maximized
                 # Otherwise we would overwrite the previous size and position with the shrinked or maximized size and position
                 # And then when we un-shrink or un-maximize the window it would be restored to the wrong size and position (the shrinked or maximized size and position instead of the previous size and position)
@@ -511,8 +565,8 @@ class Window:
                     content_height = self.window_content.winfo_height()
                     # Update child window size to match new parent content area
                     child.window_frame.place(x=-6, y=-6,
-                                          width=content_width + 12,
-                                          height=content_height + 13)
+                                             width=content_width + 12,
+                                             height=content_height + 13)
 
     def lift(self, event: tk.Event):
         """
@@ -525,17 +579,17 @@ class Window:
         # Yeah, thsi is easy, just lift the window frame above all other windows
         self.window_frame.lift()
 
-
     def create_child(self, title, content, size, flags):
         """Create a new window as a child of this window's content area.
 
         Returns:
             Window: The newly created child window
         """
-        child_window = Window(self.window_content, title, content, size, flags)  # Create a new Window instance as a child
-        self.childs.append(child_window)  # Add the child window to the list of windows
+        child_window = Window(self.window_content, title, content,
+                              size, flags)  # Create a new Window instance as a child
+        # Add the child window to the list of windows
+        self.childs.append(child_window)
         return child_window
-
 
     def set_content(self, content):
         """
@@ -545,8 +599,10 @@ class Window:
             - content: The content widget to be placed inside the window (Must be a class, not an instance)
         """
         # The circle canvas works like a reference content widget
-        self.circle_canvas.pack_forget() # We need to destroy it
+        self.circle_canvas.pack_forget()  # We need to destroy it
 
         # We need to destroy the existing content widget before adding a new one
-        self.content = content(self.window_content) # content must be a class, not an instance
-        self.content.pack(fill="both", expand=True) # then we can place the widget inside the window
+        # content must be a class, not an instance
+        self.content = content(self.window_content)
+        # then we can place the widget inside the window
+        self.content.pack(fill="both", expand=True)
